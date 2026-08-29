@@ -1,0 +1,2 @@
+# V0.1 intentionally keeps dependencies minimal.
+# Standard-library-only implementation is preferred for deterministic generation.
