@@ -57,6 +57,8 @@ def evaluate_gate1(
 
     Missing mandatory evidence or material risk/side effects stop autonomous
     execution. Human approval is explicit; silence never counts as approval.
+    An explicit human rejection always records REJECT because it is an
+    authoritative governance action, regardless of other gate conditions.
     """
     policy = policy or Gate1Policy()
     context = context or Gate1Context()
@@ -101,16 +103,16 @@ def evaluate_gate1(
     approval_required = material_budget or elevated_risk or external_commitment or sensitive_data
     hard_block = "insufficient_evidence" in reasons or "score_below_minimum" in reasons
 
-    if hard_block:
+    if context.human_approval is False:
+        outcome = "REJECT"
+        decided_by = "NOVA_CORP"
+        reasons.append("explicit_human_rejection")
+    elif hard_block:
         outcome = "HOLD"
         decided_by = "NOVA_GATE1_POLICY"
     elif approval_required and context.human_approval is not True:
         outcome = "HOLD"
         decided_by = "NOVA_GATE1_POLICY"
-    elif context.human_approval is False:
-        outcome = "REJECT"
-        decided_by = "NOVA_CORP"
-        reasons.append("explicit_human_rejection")
     else:
         outcome = "APPROVE"
         decided_by = "NOVA_CORP" if approval_required else "NOVA_GATE1_POLICY"
