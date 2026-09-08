@@ -25,28 +25,29 @@ def signal_to_opportunity(
     problem: str | None = None,
     target_customer: str | None = None,
 ) -> Opportunity:
-    """Create a factory Opportunity without bypassing existing governance.
+    """Translate an observed account signal into the existing Opportunity contract.
 
-    The function only translates an already-observed signal. It does not infer
-    commercial value, authorize execution, or assign a score.
+    This bridge does not infer commercial value, assign a score, authorize
+    execution, or manufacture evidence. Observation references are preserved
+    in metadata until the Evidence Engine provides canonical evidence IDs.
     """
     if signal.account_id != account.id:
         raise ValueError("signal account_id does not match account")
-    if not signal.claim.strip():
-        raise ValueError("signal claim must not be empty")
+    if not signal.title.strip():
+        raise ValueError("signal title must not be empty")
 
     opportunity_id = f"opp-{signal.id}"
     return Opportunity(
         id=opportunity_id,
-        title=title or signal.claim,
-        problem=problem or signal.claim,
+        title=title or signal.title,
+        problem=problem or signal.title,
         target_customer=target_customer or account.name,
-        evidence_ids=list(signal.evidence_ids),
+        evidence_ids=[],
         assumptions=["opportunity translated from observed account signal"],
         metadata={
             "account_id": account.id,
             "signal_id": signal.id,
-            "source_id": signal.source_id,
+            "observation_ids": ",".join(sorted(signal.observation_ids)),
             "translation_version": "account-opportunity-v0.1",
         },
     )
