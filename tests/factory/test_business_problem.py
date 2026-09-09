@@ -112,6 +112,7 @@ def test_business_problem_reuses_canonical_opportunity_contract() -> None:
     )
     opportunity = business_problem_to_opportunity(problem, target_customer="Fixture Company")
     assert opportunity.id == f"opp-{problem.id}"
-    assert opportunity.evidence_ids == ["obs-001"]
+    assert opportunity.evidence_ids == []
     assert opportunity.metadata["business_problem_id"] == problem.id
     assert opportunity.metadata["why_now_version"] == problem.why_now_version
+    assert opportunity.metadata["evidence_refs"] == "obs-001"
