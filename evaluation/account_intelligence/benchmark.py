@@ -21,15 +21,6 @@ BASELINE_RULES = (
     ),
 )
 
-BASELINE_DIMENSIONS = {
-    "relevance": 24,
-    "recency": 18,
-    "intensity": 17,
-    "icp_fit": 18,
-    "evidence": 8,
-    "verifiability": 5,
-}
-
 
 @dataclass(frozen=True)
 class AccountIntelligenceBenchmarkResult:
@@ -39,6 +30,19 @@ class AccountIntelligenceBenchmarkResult:
     precision: SignalPrecisionResult
 
 
+def _observable_dimensions(content: str) -> dict[str, float]:
+    """Return baseline dimensions from observable wording, not hidden labels."""
+    repeated = "repeated" in content.casefold()
+    return {
+        "relevance": 24 if repeated else 15,
+        "recency": 18,
+        "intensity": 17 if repeated else 7,
+        "icp_fit": 18,
+        "evidence": 8 if repeated else 5,
+        "verifiability": 5,
+    }
+
+
 def run_baseline_benchmark(
     fixture: AccountIntelligenceFixture | None = None,
     top_n: int = 20,
@@ -46,9 +50,16 @@ def run_baseline_benchmark(
     """Run the full synthetic baseline without exposing labels to factory code."""
     if top_n <= 0:
         raise ValueError("top_n must be positive")
+
     data = fixture or build_fixture()
     signals = extract_signals(data.observations, BASELINE_RULES)
-    scores = rank_signal_scores(tuple(score_signal(signal, BASELINE_DIMENSIONS) for signal in signals))
+    observation_by_id = {observation.id: observation for observation in data.observations}
+    scores = rank_signal_scores(
+        tuple(
+            score_signal(signal, _observable_dimensions(observation_by_id[signal.observation_ids[0]].content))
+            for signal in signals
+        )
+    )
     top_signals = scores[:top_n]
     precision = evaluate_observation_precision(top_signals, EXPECTED_SIGNAL_OBSERVATION_IDS)
     return AccountIntelligenceBenchmarkResult(
