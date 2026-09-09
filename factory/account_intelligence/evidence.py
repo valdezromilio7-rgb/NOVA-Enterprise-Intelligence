@@ -1,52 +1,12 @@
-"""Canonical evidence contracts and deterministic validation for Account Intelligence."""
+"""Canonical Evidence construction and deterministic validation for Account Intelligence."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from enum import Enum
 from hashlib import sha256
-from typing import Mapping, Sequence
+from typing import Sequence
 
 from factory.account_intelligence.domain import SourceObservation
-
-
-class EvidenceVerificationState(str, Enum):
-    """Verification state for a claim supported by source observations."""
-
-    UNVERIFIED = "UNVERIFIED"
-    VERIFIED = "VERIFIED"
-    CONFLICTING = "CONFLICTING"
-    UNVERIFIABLE = "UNVERIFIABLE"
-
-
-@dataclass(frozen=True)
-class Evidence:
-    """Validated representation of a claim supported by observations."""
-
-    id: str
-    account_id: str
-    source_ids: Sequence[str]
-    observation_ids: Sequence[str]
-    observed_at: str
-    claim: str
-    strength: float
-    provenance: str
-    verification_state: EvidenceVerificationState = EvidenceVerificationState.UNVERIFIED
-    metadata: Mapping[str, str] = field(default_factory=dict)
-
-    def __post_init__(self) -> None:
-        for field_name in ("id", "account_id", "observed_at", "claim", "provenance"):
-            value = getattr(self, field_name)
-            if not isinstance(value, str) or not value.strip():
-                raise ValueError(f"{field_name} must be a non-empty string")
-        if not self.source_ids:
-            raise ValueError("source_ids must not be empty")
-        if not self.observation_ids:
-            raise ValueError("observation_ids must not be empty")
-        if not 0.0 <= self.strength <= 1.0:
-            raise ValueError("strength must be between 0 and 1")
-        if self.verification_state is EvidenceVerificationState.VERIFIED and self.strength <= 0.0:
-            raise ValueError("verified evidence must have positive strength")
+from factory.schemas.domain import Evidence, EvidenceVerificationState
 
 
 def _stable_evidence_id(account_id: str, observation_ids: Sequence[str], claim: str) -> str:
@@ -54,13 +14,7 @@ def _stable_evidence_id(account_id: str, observation_ids: Sequence[str], claim: 
     return "ev-" + sha256(payload.encode("utf-8")).hexdigest()[:24]
 
 
-def build_evidence(
-    observations: Sequence[SourceObservation],
-    *,
-    claim: str,
-    strength: float,
-    verification_state: EvidenceVerificationState = EvidenceVerificationState.UNVERIFIED,
-) -> Evidence:
+def build_evidence(observations: Sequence[SourceObservation], *, claim: str, strength: float, verification_state: EvidenceVerificationState = EvidenceVerificationState.UNVERIFIED) -> Evidence:
     """Build canonical evidence from explicit observations without inventing provenance."""
     if not observations:
         raise ValueError("observations must not be empty")
@@ -73,17 +27,7 @@ def build_evidence(
     observation_ids = tuple(sorted({observation.id for observation in observations}))
     provenance = ";".join(sorted({observation.provenance for observation in observations}))
     observed_at = max(observation.observed_at for observation in observations)
-    evidence = Evidence(
-        id=_stable_evidence_id(next(iter(account_ids)), observation_ids, claim),
-        account_id=next(iter(account_ids)),
-        source_ids=source_ids,
-        observation_ids=observation_ids,
-        observed_at=observed_at,
-        claim=claim.strip(),
-        strength=strength,
-        provenance=provenance,
-        verification_state=verification_state,
-    )
+    evidence = Evidence(id=_stable_evidence_id(next(iter(account_ids)), observation_ids, claim), account_id=next(iter(account_ids)), source_ids=source_ids, observation_ids=observation_ids, observed_at=observed_at, claim=claim.strip(), strength=strength, provenance=provenance, verification_state=verification_state)
     validate_evidence(evidence, observations)
     return evidence
 
