@@ -1,5 +1,6 @@
 from factory.account_intelligence.domain import SourceObservation
-from factory.account_intelligence.evidence import EvidenceVerificationState, build_evidence, validate_evidence
+from factory.account_intelligence.evidence import build_evidence, validate_evidence
+from factory.schemas.domain import EvidenceVerificationState
 
 
 def observation(
@@ -23,8 +24,16 @@ def observation(
 
 
 def test_evidence_is_deterministic_and_preserves_observation_linkage() -> None:
-    first = build_evidence((observation(),), claim="Repeated delivery-status demand exists.", strength=0.8)
-    second = build_evidence((observation(),), claim="Repeated delivery-status demand exists.", strength=0.8)
+    first = build_evidence(
+        (observation(),),
+        claim="Repeated delivery-status demand exists.",
+        strength=0.8,
+    )
+    second = build_evidence(
+        (observation(),),
+        claim="Repeated delivery-status demand exists.",
+        strength=0.8,
+    )
 
     assert first == second
     assert first.observation_ids == ("obs-001",)
@@ -58,7 +67,13 @@ def test_unsupported_verified_evidence_is_rejected() -> None:
 
 def test_conflicting_state_is_explicit_and_not_silently_resolved() -> None:
     evidence = build_evidence(
-        (observation(), observation("obs-002", content="Customer support reports no delivery-status issue.")),
+        (
+            observation(),
+            observation(
+                "obs-002",
+                content="Customer support reports no delivery-status issue.",
+            ),
+        ),
         claim="Delivery-status demand has conflicting observations.",
         strength=0.5,
         verification_state=EvidenceVerificationState.CONFLICTING,
