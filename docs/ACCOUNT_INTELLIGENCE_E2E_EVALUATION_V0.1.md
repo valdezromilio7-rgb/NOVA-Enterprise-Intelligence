@@ -6,7 +6,7 @@ Prove that the Account Intelligence foundation can execute one reproducible chai
 
 ## Evaluation chain
 
-`RAW OBSERVATIONS → SIGNAL EXTRACTION → SIGNAL SCORING → TOP-N → PRECISION → CONTEXT → WHY NOW → BUSINESS PROBLEM → OPPORTUNITY`
+`RAW OBSERVATIONS → SIGNAL EXTRACTION → SIGNAL SCORING → TOP-N → PRECISION → EVIDENCE → CONTEXT → WHY NOW → BUSINESS PROBLEM → OPPORTUNITY`
 
 ## Baseline
 
@@ -15,16 +15,20 @@ Prove that the Account Intelligence foundation can execute one reproducible chai
 - Top 20 signals ranked deterministically.
 - Precision evaluated against independently maintained synthetic labels.
 - The factory domain does not import evaluation ground truth.
-- The first ranked signal is transformed through Context, Why Now, Business Problem, and the canonical Opportunity contract.
+- The first ranked signal is transformed through canonical Evidence, Context, Why Now, Business Problem, and Opportunity contracts.
 - Repeated executions must produce identical result objects.
 
 ## Evidence boundary
 
-v0.1 does not yet contain the canonical Evidence Engine. Therefore observation references are preserved as `evidence_refs` for traceability, but they are not copied into `Opportunity.evidence_ids`. Canonical Evidence IDs will be introduced by Issue #5.
+`SourceObservation` is raw source material. The E2E harness creates one canonical `Evidence` record from the selected observation and propagates its Evidence ID downstream.
 
 The distinction is mandatory:
 
 `Observation ≠ Evidence ≠ Signal ≠ Opportunity`
+
+`Opportunity.evidence_ids` contains canonical Evidence IDs only; raw observation IDs are never relabeled as evidence.
+
+The selected evidence remains `UNVERIFIED` in v0.1. Consequently, the E2E `Why Now` assessment is explicitly non-verifiable until a later evaluated verification capability establishes stronger support.
 
 ## Governance boundary
 
@@ -38,13 +42,13 @@ The synthetic precision result is a regression benchmark only. It must not be re
 2. 32 candidate signals are extracted.
 3. Top 20 are ranked and independently evaluated.
 4. The baseline reaches 20/20 precision on this synthetic fixture.
-5. At least one signal completes the Context → Why Now → Business Problem → Opportunity chain.
-6. Provenance and observation references remain traceable.
-7. Opportunity `evidence_ids` remains empty until canonical Evidence exists.
+5. At least one signal completes the Evidence → Context → Why Now → Business Problem → Opportunity chain.
+6. Provenance and canonical Evidence linkage remain traceable.
+7. Opportunity `evidence_ids` contains canonical Evidence IDs only.
 8. Repeated runs are identical.
 9. Factory modules do not import evaluation ground truth.
 10. Tests and CI remain green.
 
-## Next dependency
+## Implementation status
 
-Once this evaluation is green, implement **Issue #5 — Evidence Engine v0.1**. The Evidence Engine becomes the canonical boundary that allows validated evidence to flow into Context, Why Now, Business Problem, and eventually Opportunity without relabeling raw observations.
+The E2E path now uses the single canonical Evidence contract in `factory.schemas.domain` and the existing business-problem opportunity bridge with explicit Evidence ID propagation.
