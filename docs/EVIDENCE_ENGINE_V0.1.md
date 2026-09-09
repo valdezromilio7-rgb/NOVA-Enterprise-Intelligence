@@ -8,7 +8,9 @@ It enforces the distinction:
 
 **Observation ≠ Evidence ≠ Signal ≠ Opportunity**
 
-## Contract
+## Canonical contract
+
+`Evidence` is defined once in `factory.schemas.domain.Evidence` and is the shared Product Factory contract. Account Intelligence provides deterministic construction and validation in `factory.account_intelligence.evidence`; it does not define a parallel Evidence type.
 
 An `Evidence` record contains:
 
@@ -22,12 +24,7 @@ An `Evidence` record contains:
 - non-empty provenance;
 - explicit verification state.
 
-Verification states are:
-
-- `UNVERIFIED` — claim exists but has not been verified;
-- `VERIFIED` — deterministic support checks pass;
-- `CONFLICTING` — observations support incompatible interpretations and no silent resolution is performed;
-- `UNVERIFIABLE` — claim cannot currently be verified and therefore cannot carry positive strength.
+Verification states are `UNVERIFIED`, `VERIFIED`, `CONFLICTING`, and `UNVERIFIABLE`.
 
 ## Rules
 
@@ -46,9 +43,11 @@ Verification states are:
 
 Current Account Intelligence flow:
 
-`SourceObservation → Evidence → Context → Why Now → Business Problem → Opportunity`
+`SourceObservation → Evidence → Signal → Context → Why Now → Business Problem → Opportunity`
 
-The current Context/Why Now/Business Problem contracts can carry canonical evidence references. The Opportunity bridge must place only canonical Evidence IDs in `Opportunity.evidence_ids`; raw observation references remain metadata until evidence records exist.
+`Opportunity.evidence_ids` may contain only canonical Evidence IDs. Raw observation IDs remain inside observation linkage and must never be relabeled as evidence.
+
+The business-problem opportunity bridge accepts explicit Evidence IDs and does not infer or manufacture them.
 
 ## v0.1 limitation
 
@@ -56,11 +55,6 @@ The deterministic engine validates structural support and explicit verification 
 
 ## Acceptance evidence
 
-Unit tests cover:
+Unit tests cover deterministic identity, observation linkage, verified evidence, unsupported verification rejection, explicit conflict representation, and unverifiable evidence constraints.
 
-- deterministic identity;
-- observation linkage;
-- verified evidence;
-- unsupported verification rejection;
-- explicit conflict representation;
-- unverifiable evidence constraints.
+The E2E evaluation uses the same canonical Evidence contract and verifies deterministic propagation into Context, Why Now, Business Problem, and Opportunity.
