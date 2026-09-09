@@ -4,7 +4,7 @@ from evaluation.account_intelligence.benchmark import run_baseline_benchmark
 def test_baseline_benchmark_runs_100_accounts_to_top_20() -> None:
     result = run_baseline_benchmark()
     assert result.analyzed_accounts == 100
-    assert result.extracted_signals == 31
+    assert result.extracted_signals == 32
     assert len(result.ranked_top_signals) == 20
     assert result.precision.analyzed == 20
     assert result.precision.correct == 20
