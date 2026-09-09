@@ -13,10 +13,10 @@ def test_end_to_end_evaluation_is_complete_and_deterministic() -> None:
     assert first.precision.precision == 1.0
     assert first.context.account_id == first.why_now.account_id == first.business_problem.account_id
     assert first.context.signal_id == first.why_now.signal_id == first.business_problem.signal_id
-    assert first.business_problem.evidence_refs == ("obs-fixture-100",)
+    assert first.business_problem.evidence_refs == ("obs-fixture-005",)
     assert first.opportunity.id == f"opp-{first.business_problem.id}"
     assert first.opportunity.evidence_ids == []
-    assert first.opportunity.metadata["evidence_refs"] == "obs-fixture-100"
+    assert first.opportunity.metadata["evidence_refs"] == "obs-fixture-005"
 
     assert first == second
 
