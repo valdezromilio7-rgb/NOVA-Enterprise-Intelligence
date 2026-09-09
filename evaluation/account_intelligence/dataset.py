@@ -35,6 +35,14 @@ def build_fixture(account_count: int = 100) -> AccountIntelligenceFixture:
                 metadata={"fixture": "account-intelligence-v0.1", "index": str(index)},
             )
         )
+
+        if index % 5 == 0:
+            content = "Customer support reports repeated delivery-status requests."
+        elif index % 7 == 0:
+            content = "Customer support received a single delivery-status request."
+        else:
+            content = "Routine company profile observation."
+
         observations.append(
             SourceObservation(
                 id=f"obs-fixture-{index:03d}",
@@ -42,11 +50,7 @@ def build_fixture(account_count: int = 100) -> AccountIntelligenceFixture:
                 source_id="fixture",
                 observed_at="2026-01-01T00:00:00Z",
                 reference=f"fixture://observation/{index:03d}",
-                content=(
-                    "Customer support reports repeated delivery-status requests."
-                    if index % 5 == 0
-                    else "Routine company profile observation."
-                ),
+                content=content,
                 provenance="synthetic-fixture",
                 confidence=1.0,
                 metadata={"fixture": "account-intelligence-v0.1"},
