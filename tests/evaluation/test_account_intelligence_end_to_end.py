@@ -11,12 +11,16 @@ def test_end_to_end_evaluation_is_complete_and_deterministic() -> None:
     assert first.precision.analyzed == 20
     assert first.precision.correct == 20
     assert first.precision.precision == 1.0
+    assert first.evidence.id.startswith("ev-")
+    assert first.evidence.verification_state.value == "UNVERIFIED"
     assert first.context.account_id == first.why_now.account_id == first.business_problem.account_id
     assert first.context.signal_id == first.why_now.signal_id == first.business_problem.signal_id
-    assert first.business_problem.evidence_refs == ("obs-fixture-005",)
+    assert first.context.evidence_refs == (first.evidence.id,)
+    assert first.why_now.evidence_refs == (first.evidence.id,)
+    assert first.business_problem.evidence_refs == (first.evidence.id,)
     assert first.opportunity.id == f"opp-{first.business_problem.id}"
-    assert first.opportunity.evidence_ids == []
-    assert first.opportunity.metadata["evidence_refs"] == "obs-fixture-005"
+    assert tuple(first.opportunity.evidence_ids) == (first.evidence.id,)
+    assert first.opportunity.metadata["evidence_refs"] == first.evidence.id
 
     assert first == second
 
