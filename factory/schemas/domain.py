@@ -16,6 +16,15 @@ class EvidenceType(str, Enum):
     INFERRED = "inferred"
 
 
+class EvidenceVerificationState(str, Enum):
+    """Verification state for a claim supported by source observations."""
+
+    UNVERIFIED = "UNVERIFIED"
+    VERIFIED = "VERIFIED"
+    CONFLICTING = "CONFLICTING"
+    UNVERIFIABLE = "UNVERIFIABLE"
+
+
 class OpportunityState(str, Enum):
     IDEA = "idea"
     DISCOVERY = "discovery"
@@ -44,17 +53,32 @@ class Signal:
 
 @dataclass(frozen=True)
 class Evidence:
+    """Canonical validated representation of a claim supported by observations."""
+
     id: str
-    signal_ids: Sequence[str]
-    evidence_type: EvidenceType
+    account_id: str
+    source_ids: Sequence[str]
+    observation_ids: Sequence[str]
+    observed_at: str
     claim: str
     strength: float
     provenance: str
+    verification_state: EvidenceVerificationState = EvidenceVerificationState.UNVERIFIED
     metadata: Mapping[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        for field_name in ("id", "account_id", "observed_at", "claim", "provenance"):
+            value = getattr(self, field_name)
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"{field_name} must be a non-empty string")
+        if not self.source_ids:
+            raise ValueError("source_ids must not be empty")
+        if not self.observation_ids:
+            raise ValueError("observation_ids must not be empty")
         if not 0.0 <= self.strength <= 1.0:
             raise ValueError("evidence strength must be between 0 and 1")
+        if self.verification_state is EvidenceVerificationState.VERIFIED and self.strength <= 0.0:
+            raise ValueError("verified evidence must have positive strength")
 
 
 @dataclass(frozen=True)
