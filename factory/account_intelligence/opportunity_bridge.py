@@ -17,7 +17,17 @@ def business_problem_to_opportunity(
     """Translate a business problem while preserving canonical Evidence IDs."""
     if not target_customer.strip():
         raise ValueError("target_customer must not be empty")
-    normalized_evidence_ids = tuple(sorted(set(evidence_id.strip() for evidence_id in evidence_ids if evidence_id.strip())))
+
+    normalized_evidence_ids = tuple(
+        sorted(
+            set(
+                evidence_id.strip()
+                for evidence_id in evidence_ids
+                if evidence_id.strip()
+            )
+        )
+    )
+
     return Opportunity(
         id=f"opp-{problem.id}",
         title=problem.problem_statement,
