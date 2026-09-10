@@ -51,5 +51,7 @@ def test_signal_engine_does_not_need_ground_truth() -> None:
     fixture = build_fixture()
     rules = (SignalRule("delivery-demand-v0.1", "customer_pain", "Repeated delivery-status support demand", ("customer support", "delivery-status")),)
     signals = extract_signals(fixture.observations, rules)
-    assert len(signals) == 20
+    # The signal engine emits every observation matching the rule.
+    # Ground truth belongs exclusively to evaluation and must not shape extraction.
+    assert len(signals) == 32
     assert all(signal.account_id.startswith("acct-fixture-") for signal in signals)
