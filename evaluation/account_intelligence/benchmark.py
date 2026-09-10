@@ -17,7 +17,7 @@ BASELINE_RULES = (
         rule_id="delivery-demand-v0.1",
         signal_type="customer_pain",
         title="Repeated delivery-status support demand",
-        trigger_terms=("customer support", "delivery-status", "repeated"),
+        trigger_terms=("customer support", "delivery-status"),
         confidence=0.8,
     ),
 )
