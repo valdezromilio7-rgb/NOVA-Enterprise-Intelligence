@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from factory.account_intelligence.domain import Account, AccountSignal
-from factory.schemas.domain import Opportunity
+from factory.account_intelligence.domain import Account
+from factory.schemas.domain import Opportunity, Signal
 
 
 @dataclass(frozen=True)
@@ -19,7 +19,7 @@ class AccountOpportunityLink:
 
 def signal_to_opportunity(
     account: Account,
-    signal: AccountSignal,
+    signal: Signal,
     *,
     title: str | None = None,
     problem: str | None = None,
