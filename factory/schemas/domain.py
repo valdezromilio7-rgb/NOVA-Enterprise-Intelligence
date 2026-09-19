@@ -262,6 +262,9 @@ class ValidationExperiment:
     failure_threshold: str
     budget_limit: float
     status: str = "planned"
+    account_id: str | None = None
+    result: str = ""
+    result_evidence_ids: Sequence[str] = field(default_factory=tuple)
 
 
 @dataclass(frozen=True)
