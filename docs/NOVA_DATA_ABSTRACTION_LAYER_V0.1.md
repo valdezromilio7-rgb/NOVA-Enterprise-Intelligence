@@ -18,7 +18,7 @@ Adapters are read-only in v0.1 and return provider-neutral contracts. Provider p
 - `DataProviderAdapter`: stable adapter interface.
 - `ProviderCapabilities`: explicit declared capabilities.
 - `RetrievalMetadata`: retrieval time, request identity, duration, freshness and error semantics.
-- `NormalizedObservation`: provider-neutral observation.
+- `NormalizedObservation`: provider-neutral observation; `account_id` is optional so the boundary supports both account-scoped intelligence and global market/public data.
 - `AcquisitionResult`: auditable success/partial/failure boundary.
 - `normalize_observation`: deterministic normalization and stable observation ID.
 
@@ -49,6 +49,8 @@ This block does not implement scraping, crawling, CRM, outbound automation, prov
 
 Those are later adapters/capabilities built behind this boundary.
 
-## Next step
+## Real provider #001
 
-Implement the first real read-only provider adapter against a measurable public source. The adapter must feed canonical observations and preserve provenance, retrieval time, freshness, deterministic IDs, and errors.
+The first laboratory-to-real adapter is the Banco Central del Paraguay daily reference-currency page. It is read-only, public, measurable, and requires no paid provider dependency. The adapter produces normalized observations with source identity, observation date, provenance, retrieval metadata, and deterministic IDs.
+
+The adapter does not create Signals or Evidence. Those remain downstream domain decisions.
