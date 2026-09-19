@@ -99,7 +99,7 @@ class Evidence:
     """Canonical validated representation of a claim supported by observations."""
 
     id: str
-    account_id: str
+    account_id: str | None
     source_ids: Sequence[str]
     observation_ids: Sequence[str]
     observed_at: str
@@ -110,10 +110,12 @@ class Evidence:
     metadata: Mapping[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        for field_name in ("id", "account_id", "observed_at", "claim", "provenance"):
+        for field_name in ("id", "observed_at", "claim", "provenance"):
             value = getattr(self, field_name)
             if not isinstance(value, str) or not value.strip():
                 raise ValueError(f"{field_name} must be a non-empty string")
+        if self.account_id is not None and not self.account_id.strip():
+            raise ValueError("account_id must be non-empty when provided")
         if not self.source_ids:
             raise ValueError("source_ids must not be empty")
         if not self.observation_ids:
