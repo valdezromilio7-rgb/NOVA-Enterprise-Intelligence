@@ -125,6 +125,59 @@ class Evidence:
 
 
 @dataclass(frozen=True)
+class Context:
+    """Canonical context assembled from explicit signals and evidence."""
+    id: str
+    signal_id: str
+    context_type: str
+    facts: Sequence[str]
+    evidence_refs: Sequence[str]
+    current_state: str
+    change_event: str
+    confidence: float
+    provenance: str
+    account_id: str | None = None
+    context_version: str = "context-v0.1"
+
+    def __post_init__(self) -> None:
+        for name in ("id", "signal_id", "context_type", "current_state", "provenance"):
+            if not isinstance(getattr(self, name), str) or not getattr(self, name).strip():
+                raise ValueError(f"{name} must be non-empty")
+        if self.account_id is not None and not self.account_id.strip():
+            raise ValueError("account_id must be non-empty when provided")
+        if not self.facts:
+            raise ValueError("facts must not be empty")
+        if not 0.0 <= self.confidence <= 1.0:
+            raise ValueError("confidence must be between 0 and 1")
+
+
+@dataclass(frozen=True)
+class WhyNow:
+    """Canonical timing assessment; urgency is never inferred silently."""
+    id: str
+    signal_id: str
+    trigger: str
+    timing_factors: Sequence[str]
+    rationale: str
+    evidence_refs: Sequence[str]
+    confidence: float
+    verifiable: bool
+    account_id: str | None = None
+    assessment_version: str = "why-now-v0.1"
+
+    def __post_init__(self) -> None:
+        for name in ("id", "signal_id", "trigger", "rationale"):
+            if not isinstance(getattr(self, name), str) or not getattr(self, name).strip():
+                raise ValueError(f"{name} must be non-empty")
+        if self.account_id is not None and not self.account_id.strip():
+            raise ValueError("account_id must be non-empty when provided")
+        if not 0.0 <= self.confidence <= 1.0:
+            raise ValueError("confidence must be between 0 and 1")
+        if self.verifiable and not self.evidence_refs:
+            raise ValueError("verifiable Why Now assessments require evidence references")
+
+
+@dataclass(frozen=True)
 class Opportunity:
     id: str
     title: str
