@@ -79,6 +79,18 @@ class NormalizedObservation:
 
 
 @dataclass(frozen=True)
+class ObservationQueryResult:
+    """Normalized observations exposed to downstream canonical domain consumers."""
+
+    observations: Sequence[NormalizedObservation]
+    retrieval: RetrievalMetadata
+
+    def __post_init__(self) -> None:
+        if self.retrieval is None:
+            raise ValueError("retrieval metadata is required")
+
+
+@dataclass(frozen=True)
 class AcquisitionResult:
     """Auditable result of one adapter acquisition attempt."""
 
