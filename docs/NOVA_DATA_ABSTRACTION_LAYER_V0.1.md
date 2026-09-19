@@ -20,6 +20,7 @@ Adapters are read-only in v0.1 and return provider-neutral contracts. Provider p
 - `RetrievalMetadata`: retrieval time, request identity, duration, freshness and error semantics.
 - `NormalizedObservation`: provider-neutral observation; `account_id` is optional so the boundary supports both account-scoped intelligence and global market/public data.
 - `AcquisitionResult`: auditable success/partial/failure boundary.
+- `bridge.to_source_observation`: explicit bridge for account-scoped observations only.
 - `normalize_observation`: deterministic normalization and stable observation ID.
 
 ## Rules
@@ -54,3 +55,7 @@ Those are later adapters/capabilities built behind this boundary.
 The first laboratory-to-real adapter is the Banco Central del Paraguay daily reference-currency page. It is read-only, public, measurable, and requires no paid provider dependency. The adapter produces normalized observations with source identity, observation date, provenance, retrieval metadata, and deterministic IDs.
 
 The adapter does not create Signals or Evidence. Those remain downstream domain decisions.
+
+## Domain boundary
+
+Normalized observations may be global public/market data or account-scoped data. Only account-scoped observations may cross into the legacy Account Intelligence `SourceObservation` contract through the explicit bridge. Global observations remain provider-neutral until a canonical global Signal/Evidence consumer is introduced.
