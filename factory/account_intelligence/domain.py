@@ -76,26 +76,40 @@ class SourceObservation:
             raise ValueError("confidence must be between 0 and 1")
 
 
-@dataclass(frozen=True)
-class AccountSignal:
-    """Account-scoped interpretation backed by one or more observations."""
+def AccountSignal(
+    *,
+    id: str,
+    account_id: str,
+    signal_type: str,
+    title: str,
+    observed_at: str,
+    observation_ids: Sequence[str],
+    confidence: float,
+    rationale: str = "",
+    metadata: Mapping[str, str] | None = None,
+):
+    """Compatibility constructor for the canonical Signal.
 
-    id: str
-    account_id: str
-    signal_type: str
-    title: str
-    observed_at: str
-    observation_ids: Sequence[str]
-    confidence: float
-    rationale: str = ""
-    metadata: Mapping[str, str] = field(default_factory=dict)
+    New code must import Signal from factory.schemas.domain directly.
+    This adapter exists only to prevent an abrupt break for existing
+    Account Intelligence callers while the duplicate AccountSignal contract is
+    retired.
+    """
+    from factory.schemas.domain import Signal
 
-    def __post_init__(self) -> None:
-        for field_name in ("id", "account_id", "signal_type", "title", "observed_at"):
-            value = getattr(self, field_name)
-            if not isinstance(value, str) or not value.strip():
-                raise ValueError(f"{field_name} must be a non-empty string")
-        if not self.observation_ids:
-            raise ValueError("observation_ids must not be empty")
-        if not 0.0 <= self.confidence <= 1.0:
-            raise ValueError("confidence must be between 0 and 1")
+    values = dict(metadata or {})
+    provenance = str(values.pop("provenance", "account-intelligence"))
+    return Signal(
+        id=id,
+        source=f"account:{account_id}",
+        observed_at=observed_at,
+        subject=title,
+        content=title,
+        provenance=provenance,
+        metadata=values,
+        account_id=account_id,
+        signal_type=signal_type,
+        observation_ids=tuple(observation_ids),
+        confidence=confidence,
+        rationale=rationale,
+    )

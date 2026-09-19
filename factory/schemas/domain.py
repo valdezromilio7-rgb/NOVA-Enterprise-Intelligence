@@ -42,6 +42,14 @@ class OpportunityState(str, Enum):
 
 @dataclass(frozen=True)
 class Signal:
+    """Canonical interpretation of one or more observations.
+
+    A Signal is the single domain concept used by Product Factory and Account
+    Intelligence. Generic signals may omit account-scoped fields; account-scoped
+    signals must identify their observations and signal type. Signal IDs must
+    never be used as Evidence IDs.
+    """
+
     id: str
     source: str
     observed_at: str
@@ -49,6 +57,41 @@ class Signal:
     content: str
     provenance: str
     metadata: Mapping[str, Any] = field(default_factory=dict)
+    account_id: str | None = None
+    signal_type: str | None = None
+    observation_ids: Sequence[str] = field(default_factory=tuple)
+    confidence: float | None = None
+    rationale: str = ""
+
+    @property
+    def title(self) -> str:
+        """Compatibility/readability alias for account-scoped consumers."""
+        return self.subject
+
+    def __post_init__(self) -> None:
+        for field_name in (
+            "id",
+            "source",
+            "observed_at",
+            "subject",
+            "content",
+            "provenance",
+        ):
+            value = getattr(self, field_name)
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"{field_name} must be a non-empty string")
+
+        if self.account_id is not None and not self.account_id.strip():
+            raise ValueError("account_id must be non-empty when provided")
+        if self.signal_type is not None and not self.signal_type.strip():
+            raise ValueError("signal_type must be non-empty when provided")
+
+        if self.account_id is not None and not self.observation_ids:
+            raise ValueError("account-scoped signals must reference observations")
+        if self.account_id is not None and self.signal_type is None:
+            raise ValueError("account-scoped signals must define signal_type")
+        if self.confidence is not None and not 0.0 <= self.confidence <= 1.0:
+            raise ValueError("signal confidence must be between 0 and 1")
 
 
 @dataclass(frozen=True)
