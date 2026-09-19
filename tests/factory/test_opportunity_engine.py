@@ -23,6 +23,33 @@ class OpportunityEngineTests(unittest.TestCase):
         )
         self.assertEqual(len(support_cluster.signal_ids), 3)
 
+    def test_default_opportunity_does_not_promote_signal_ids_to_evidence(self):
+        from factory.opportunity.engine import _default_opportunity
+
+        cluster = cluster_signals(normalize_signals(BENCHMARK_SIGNALS))[0]
+        opportunity = _default_opportunity(cluster)
+
+        self.assertEqual(opportunity.evidence_ids, ())
+        self.assertEqual(
+            tuple(opportunity.metadata["signal_ids"]),
+            cluster.signal_ids,
+        )
+
+    def test_custom_builder_must_not_use_signal_ids_as_evidence(self):
+        normalized = normalize_signals(BENCHMARK_SIGNALS)
+        clusters = cluster_signals(normalized)
+
+        for cluster in clusters:
+            opportunity = Opportunity(
+                id=cluster.key,
+                title=cluster.key,
+                problem="benchmark problem",
+                target_customer="benchmark customer",
+                evidence_ids=(),
+                metadata={"signal_ids": cluster.signal_ids},
+            )
+            self.assertEqual(opportunity.evidence_ids, ())
+
     def test_engine_ranks_highest_scored_opportunity_first(self):
         def builder(cluster):
             return Opportunity(
@@ -30,8 +57,8 @@ class OpportunityEngineTests(unittest.TestCase):
                 title=cluster.key,
                 problem="benchmark problem",
                 target_customer="benchmark customer",
-                evidence_ids=cluster.signal_ids,
-                metadata={"terms": cluster.terms},
+                evidence_ids=(),
+                metadata={"terms": cluster.terms, "signal_ids": cluster.signal_ids},
             )
 
         normalized = normalize_signals(BENCHMARK_SIGNALS)
@@ -59,6 +86,7 @@ class OpportunityEngineTests(unittest.TestCase):
         self.assertIn(
             "support", result.ranked_opportunities[0].cluster.terms
         )
+        self.assertEqual(result.ranked_opportunities[0].opportunity.evidence_ids, ())
 
 
 if __name__ == "__main__":
