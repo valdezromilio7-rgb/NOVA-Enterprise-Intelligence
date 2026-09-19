@@ -88,6 +88,8 @@ class Opportunity:
     problem: str
     target_customer: str
     state: OpportunityState = OpportunityState.DISCOVERY
+    # Only canonical Evidence IDs belong here. Observation, Signal, Source, or
+    # arbitrary references must remain in their own contracts/metadata.
     evidence_ids: Sequence[str] = field(default_factory=tuple)
     assumptions: Sequence[str] = field(default_factory=tuple)
     metadata: Mapping[str, Any] = field(default_factory=dict)
