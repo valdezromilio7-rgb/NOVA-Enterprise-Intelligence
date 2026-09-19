@@ -1,4 +1,4 @@
-from factory.account_intelligence.domain import AccountSignal
+from factory.account_intelligence.domain import Account, AccountSignal
 from factory.account_intelligence.opportunity import signal_to_opportunity
 from factory.schemas.domain import Signal
 
@@ -54,7 +54,7 @@ def test_account_signal_bridge_accepts_canonical_signal():
         confidence=0.95,
     )
     opportunity = signal_to_opportunity(
-        type("AccountStub", (), {"id": "account-1", "name": "Example Account"})(),
+        Account(id="account-1", name="Example Account", country="PY"),
         signal,
     )
 
