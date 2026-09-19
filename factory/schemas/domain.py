@@ -178,17 +178,60 @@ class WhyNow:
 
 
 @dataclass(frozen=True)
+class BusinessProblem:
+    """Canonical problem statement derived from explicit context and Why Now."""
+
+    id: str
+    signal_id: str
+    context_id: str
+    why_now_id: str
+    context_version: str
+    why_now_version: str
+    problem_statement: str
+    current_solution: str
+    gap: str
+    desired_outcome: str
+    evidence_refs: Sequence[str]
+    confidence: float
+    provenance: str
+    account_id: str | None = None
+    problem_version: str = "business-problem-v0.1"
+
+    def __post_init__(self) -> None:
+        for name in ("id", "signal_id", "context_id", "why_now_id", "context_version", "why_now_version", "problem_statement", "current_solution", "gap", "desired_outcome", "provenance"):
+            if not isinstance(getattr(self, name), str) or not getattr(self, name).strip():
+                raise ValueError(f"{name} must be non-empty")
+        if self.account_id is not None and not self.account_id.strip():
+            raise ValueError("account_id must be non-empty when provided")
+        if not self.evidence_refs:
+            raise ValueError("business problem requires evidence references")
+        if not 0.0 <= self.confidence <= 1.0:
+            raise ValueError("confidence must be between 0 and 1")
+
+
+@dataclass(frozen=True)
 class Opportunity:
     id: str
     title: str
     problem: str
     target_customer: str
     state: OpportunityState = OpportunityState.DISCOVERY
+    account_id: str | None = None
+    business_problem_id: str | None = None
     # Only canonical Evidence IDs belong here. Observation, Signal, Source, or
     # arbitrary references must remain in their own contracts/metadata.
     evidence_ids: Sequence[str] = field(default_factory=tuple)
     assumptions: Sequence[str] = field(default_factory=tuple)
     metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        for name in ("id", "title", "problem", "target_customer"):
+            if not isinstance(getattr(self, name), str) or not getattr(self, name).strip():
+                raise ValueError(f"{name} must be non-empty")
+        if self.account_id is not None and not self.account_id.strip():
+            raise ValueError("account_id must be non-empty when provided")
+        if self.business_problem_id is not None and not self.business_problem_id.strip():
+            raise ValueError("business_problem_id must be non-empty when provided")
 
 
 @dataclass(frozen=True)
