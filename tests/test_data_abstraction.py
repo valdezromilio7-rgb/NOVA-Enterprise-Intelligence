@@ -107,3 +107,27 @@ def test_bcp_adapter_normalizes_real_source_shape():
     assert observation.metadata["rate_pyg"] == "5.956,04"
     assert observation.provenance == "Banco Central del Paraguay"
     assert result.retrieval is not None
+
+
+def test_account_scoped_observation_bridges_without_changing_identity():
+    from factory.data_abstraction.bridge import to_source_observation
+
+    normalized = normalize_observation(make_observation())
+    bridged = to_source_observation(normalized)
+
+    assert bridged.id == normalized.id
+    assert bridged.account_id == normalized.account_id
+    assert bridged.source_id == normalized.source_id
+    assert bridged.content == normalized.content
+
+
+def test_global_observation_cannot_cross_account_boundary():
+    from factory.data_abstraction.bridge import to_source_observation
+
+    normalized = normalize_observation(make_observation(account_id=None))
+    try:
+        to_source_observation(normalized)
+    except ValueError as exc:
+        assert "global observations" in str(exc)
+    else:
+        raise AssertionError("expected global observation boundary")
