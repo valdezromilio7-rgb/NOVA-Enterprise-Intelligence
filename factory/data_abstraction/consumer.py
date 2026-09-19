@@ -11,7 +11,7 @@ from factory.schemas.domain import Evidence, EvidenceVerificationState, Signal
 
 def _stable_id(prefix: str, parts: Sequence[str]) -> str:
     payload = "|".join(part.strip() for part in parts)
-    return f"{prefix}_{sha256(payload.encode("utf-8")).hexdigest()[:24]}"
+    return f'{prefix}_{sha256(payload.encode("utf-8")).hexdigest()[:24]}'
 
 
 def signal_from_observation(observation: NormalizedObservation, *, subject: str, content: str | None = None, signal_type: str | None = None, rationale: str = "") -> Signal:
