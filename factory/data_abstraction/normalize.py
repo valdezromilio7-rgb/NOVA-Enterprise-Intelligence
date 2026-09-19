@@ -14,7 +14,7 @@ def normalize_text(value: str) -> str:
 
 
 def stable_observation_id(observation: NormalizedObservation) -> str:
-    raw = "|".join((observation.source_id, observation.account_id, observation.observed_at, observation.reference, observation.content, observation.provenance))
+    raw = "|".join((observation.source_id, observation.account_id or "", observation.observed_at, observation.reference, observation.content, observation.provenance))
     return "obs_" + hashlib.sha256(raw.encode("utf-8")).hexdigest()[:24]
 
 
