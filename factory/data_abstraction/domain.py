@@ -58,7 +58,7 @@ class NormalizedObservation:
 
     id: str
     source_id: str
-    account_id: str
+    account_id: str | None = None
     observed_at: str
     reference: str
     content: str
@@ -68,10 +68,12 @@ class NormalizedObservation:
     metadata: Mapping[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        for field_name in ("id", "source_id", "account_id", "observed_at", "reference", "content", "provenance"):
+        for field_name in ("id", "source_id", "observed_at", "reference", "content", "provenance"):
             value = getattr(self, field_name)
             if not isinstance(value, str) or not value.strip():
                 raise ValueError(f"{field_name} must be a non-empty string")
+        if self.account_id is not None and not self.account_id.strip():
+            raise ValueError("account_id must be non-empty when provided")
         if not 0.0 <= self.confidence <= 1.0:
             raise ValueError("confidence must be between 0 and 1")
 

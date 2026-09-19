@@ -78,3 +78,32 @@ def test_adapter_contract_is_read_only_and_provider_neutral():
     adapter = LaboratoryAdapter()
     assert adapter.capabilities.supports_read_only is True
     assert adapter.acquire({}).observations[0].source_id == "source-1"
+
+
+def test_observation_can_be_global_without_account_scope():
+    observation = normalize_observation(make_observation(account_id=None))
+    assert observation.account_id is None
+    assert observation.id.startswith("obs_")
+
+
+def test_bcp_adapter_normalizes_real_source_shape():
+    from factory.data_abstraction.providers.bcp import BcpDailyCurrencyAdapter
+
+    html = """
+    <table>
+      <tr><th>MONEDA</th><th>ME/USD</th><th>₲ / ME</th></tr>
+      <tr><td>DÓLAR ESTADOUNIDENSE</td><td>USD</td><td>5.956,04</td></tr>
+    </table>
+    <div>PLANILLA DE COTIZACIONES AL VIERNES 18 DE SEPTIEMBRE DEL 2026</div>
+    """
+    adapter = BcpDailyCurrencyAdapter(fetcher=lambda url, timeout: (html, 12))
+    result = adapter.acquire({"currency": "USD"})
+
+    assert result.status is AcquisitionStatus.SUCCESS
+    observation = result.observations[0]
+    assert observation.account_id is None
+    assert observation.observed_at == "2026-09-18"
+    assert observation.metadata["currency"] == "USD"
+    assert observation.metadata["rate_pyg"] == "5.956,04"
+    assert observation.provenance == "Banco Central del Paraguay"
+    assert result.retrieval is not None
