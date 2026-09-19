@@ -26,6 +26,12 @@ class OpportunityEngineResult:
 
 
 def _default_opportunity(cluster: SignalCluster) -> Opportunity:
+    """Construct an opportunity without fabricating canonical evidence.
+
+    Cluster signal IDs are preserved as signal provenance in metadata. They are
+    deliberately not copied into Opportunity.evidence_ids because Signal IDs
+    and Evidence IDs represent different canonical contracts.
+    """
     title = "Opportunity: " + (cluster.terms[0] if cluster.terms else cluster.key)
     return Opportunity(
         id="opp_" + cluster.key.removeprefix("cluster_"),
@@ -33,9 +39,14 @@ def _default_opportunity(cluster: SignalCluster) -> Opportunity:
         problem="Signals indicate a recurring issue or unmet need; validation is required.",
         target_customer="Unknown — determine during validation.",
         state=OpportunityState.DISCOVERY,
-        evidence_ids=cluster.signal_ids,
+        evidence_ids=(),
         assumptions=("The clustered signals represent the same underlying problem.",),
-        metadata={"cluster_key": cluster.key, "terms": cluster.terms},
+        metadata={
+            "cluster_key": cluster.key,
+            "terms": cluster.terms,
+            "signal_ids": cluster.signal_ids,
+            "evidence_status": "pending",
+        },
     )
 
 
